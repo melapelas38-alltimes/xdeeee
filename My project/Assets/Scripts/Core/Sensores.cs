@@ -1,10 +1,10 @@
-using System;
+ï»¿using System;
 
 namespace Composta.Core
 {
     public enum TipoFalla { Ninguna = 0, Congelado = 1, Desconectado = 2, Deriva = 3, Picos = 4 }
 
-    // Un sensor físico simulado: mide la "verdad" con ruido y puede fallar
+    // Un sensor fÃ­sico simulado: mide la "verdad" con ruido y puede fallar
     public class Sensor
     {
         public readonly string Nombre;
@@ -35,7 +35,7 @@ namespace Composta.Core
 
         public void Reparar() { Falla = TipoFalla.Ninguna; sesgo = 0f; horasRestantes = 0; }
 
-        // null = sin señal
+        // null = sin seÃ±al
         public float? Leer(float real)
         {
             if (horasRestantes > 0 && --horasRestantes == 0) Reparar();
@@ -61,7 +61,7 @@ namespace Composta.Core
         }
     }
 
-    // Lo que el sistema "cree" de una variable después de fusionar los sensores
+    // Lo que el sistema "cree" de una variable despuÃ©s de fusionar los sensores
     public class Medicion
     {
         public Magnitud Magnitud;
@@ -76,7 +76,7 @@ namespace Composta.Core
     {
         public float ProbFalla;                   // probabilidad por sensor y por hora
 
-        const int HorasCongelado = 6;             // lecturas idénticas seguidas = congelado
+        const int HorasCongelado = 6;             // lecturas idÃ©nticas seguidas = congelado
         const float Tolerancia = 0.03f;           // % del rango permitido entre A y B
 
         readonly Sensor[,] sensores = new Sensor[4, 2];
@@ -115,7 +115,7 @@ namespace Composta.Core
             if (!inicializado)
             {
                 for (int m = 0; m < 4; m++) ultimoValido[m] = Agregador.Valor(real, (Magnitud)m);
-                inicializado = true;              // calibración de fábrica
+                inicializado = true;              // calibraciÃ³n de fÃ¡brica
             }
 
             var resultado = new Medicion[4];
@@ -168,7 +168,7 @@ namespace Composta.Core
                 }
                 else
                 {
-                    // Con 2 sensores se detecta el desacuerdo, pero no cuál tiene la razón
+                    // Con 2 sensores se detecta el desacuerdo, pero no cuÃ¡l tiene la razÃ³n
                     med.Valor = ultimoValido[m];
                     med.Confiable = false;
                     med.Nivel = Nivel.Aviso;
@@ -189,7 +189,7 @@ namespace Composta.Core
                 med.Valor = ultimoValido[m];
                 med.Confiable = false;
                 med.Nivel = Nivel.Critico;
-                med.Diagnostico = $"Sin datos válidos (A: {motivo[0]}, B: {motivo[1]})";
+                med.Diagnostico = $"Sin datos vÃ¡lidos (A: {motivo[0]}, B: {motivo[1]})";
             }
             return med;
         }

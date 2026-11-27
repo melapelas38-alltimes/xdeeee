@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 
 namespace Composta.Core
@@ -18,11 +18,11 @@ namespace Composta.Core
                 case Magnitud.Temperatura: return "Temperatura";
                 case Magnitud.PH: return "pH";
                 case Magnitud.Humedad: return "Humedad";
-                default: return "Oxígeno";
+                default: return "OxÃ­geno";
             }
         }
 
-        // Límites GENÉRICOS: la base de la que parte cada perfil
+        // LÃ­mites GENÃ‰RICOS: la base de la que parte cada perfil
         public static Limite Base(Magnitud m)
         {
             switch (m)
@@ -34,8 +34,8 @@ namespace Composta.Core
                         AvisoMax = 65,
                         CriticoMin = 0,
                         CriticoMax = 70,
-                        Unidad = "°C",
-                        AccionBaja = "Agregar material rico en nitrógeno",
+                        Unidad = "Â°C",
+                        AccionBaja = "Agregar material rico en nitrÃ³geno",
                         AccionAlta = "Voltear para disipar calor"
                     };
                 case Magnitud.PH:

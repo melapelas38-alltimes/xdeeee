@@ -1,0 +1,15 @@
+<!--
+  Fragmento para Assets/Plugins/Android/AndroidManifest.xml (Project Settings > Player > Android >
+  Publishing Settings > marcar "Custom Main Manifest"; Unity genera el archivo).
+  Pégalo DENTRO de la <activity> que ya tiene el intent-filter MAIN/LAUNCHER
+  (en Unity 6 suele ser com.unity3d.player.UnityPlayerGameActivity o UnityPlayerActivity).
+
+  Sustituye "com.tucomunidad.composta" por el nombre de paquete de la app EN MINÚSCULAS
+  (el mismo valor que "esquemaRedireccionAndroid" en ConfiguracionGoogle).
+-->
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="com.tucomunidad.composta" android:path="/oauth2redirect" />
+</intent-filter>

@@ -1,0 +1,42 @@
+# --- Unity: carpetas generadas (se recrean al abrir el proyecto) ---
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# --- IDEs ---
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# --- Varios ---
+sysinfo.txt
+crashlytics-build.properties
+*.apk
+*.aab
+*.unitypackage
+
+# --- Escenas de recuperación tras un crash ---
+[Aa]ssets/_Recovery/
+[Aa]ssets/_Recovery.meta
+
+# --- Credenciales de Google (nunca al repositorio) ---
+[Aa]ssets/[Rr]esources/ConfiguracionGoogle.asset
+[Aa]ssets/[Rr]esources/ConfiguracionGoogle.asset.meta
+*.keystore
+*.jks

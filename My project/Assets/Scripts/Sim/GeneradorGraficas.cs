@@ -1,7 +1,9 @@
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Composta.App;
 using Composta.Core;
+using Composta.Core.Seguridad;
 
 public class GeneradorGraficas : MonoBehaviour
 {
@@ -17,31 +19,60 @@ public class GeneradorGraficas : MonoBehaviour
 
     void Start()
     {
-        if (simulador == null) simulador = FindFirstObjectByType<SimuladorComposta>();
+        if (simulador == null) simulador = FindAnyObjectByType<SimuladorComposta>();
+        if (simulador == null)
+        {
+            Debug.LogError("GeneradorGraficas: no hay un SimuladorComposta en la escena.");
+            enabled = false;
+            return;
+        }
         simulador.AlTick += AlTick;
+        simulador.AlReiniciar += AlCambiarSistema;
+        simulador.AlCargar += AlCambiarSistema;
     }
 
     void OnDestroy()
     {
-        if (simulador != null) simulador.AlTick -= AlTick;
+        if (simulador != null)
+        {
+            simulador.AlTick -= AlTick;
+            simulador.AlReiniciar -= AlCambiarSistema;
+            simulador.AlCargar -= AlCambiarSistema;
+        }
+        for (int i = 0; i < texturas.Length; i++)          // las Texture2D no las libera el GC
+            if (texturas[i] != null) Destroy(texturas[i]);
     }
 
     void AlTick(Lectura l)
     {
-        if (l.Tick % refrescarCadaTicks == 0) Regenerar();
+        // Se marca y se redibuja una sola vez por fotograma (al ponerse al día pasan cientos de horas de golpe)
+        if (l.Tick % Mathf.Max(1, refrescarCadaTicks) == 0) pendiente = true;   // 0 provocaba DivideByZeroException
     }
+
+    bool pendiente;
+
+    void LateUpdate()
+    {
+        if (!pendiente) return;
+        pendiente = false;
+        Regenerar();
+    }
+
+    // Nueva composta o lote reanudado: redibujar ya (antes quedaban las gráficas del lote anterior)
+    void AlCambiarSistema(SistemaComposta _) => Regenerar();
 
     public void Regenerar()
     {
+        if (simulador == null || simulador.Sistema == null) return;
         for (int i = 0; i < Todas.Length; i++)
         {
-            if (texturas[i] != null) Destroy(texturas[i]);
             var serie = Agregador.Construir(simulador.Historial.Lecturas, Todas[i], granularidad);
-            texturas[i] = DibujanteGrafica.Dibujar(serie, ancho, alto, simulador.Sistema.Perfil.ZonaIdeal(Todas[i]));
+            // Reutiliza la textura: antes se creaba y destruía una de 640x320 cuatro veces cada 12 horas simuladas
+            texturas[i] = DibujanteGrafica.Dibujar(serie, ancho, alto, simulador.Sistema.Perfil.ZonaIdeal(Todas[i]), texturas[i]);
         }
     }
 
-    // La UI usar� esto para pintar cada gr�fica en un RawImage
+    // La UI usará esto para pintar cada gráfica en un RawImage
     public Texture2D ObtenerTextura(Magnitud m) => texturas[(int)m];
 
     public void CambiarGranularidad()
@@ -50,33 +81,44 @@ public class GeneradorGraficas : MonoBehaviour
                      : granularidad == Granularidad.Dia ? Granularidad.Semana
                      : Granularidad.Hora;
         Regenerar();
-        Debug.Log($"Gr�ficas por: {granularidad}");
+        Debug.Log($"Gráficas por: {granularidad}");
     }
 
     public void GuardarPng()
     {
-        Regenerar();
-        for (int i = 0; i < Todas.Length; i++)
+        if (simulador != null && !simulador.PuedeHacer(Permiso.Exportar)) return;
+        try
         {
-            string ruta = Path.Combine(Application.persistentDataPath,
-                $"grafica_{Todas[i]}_{granularidad}.png");
-            File.WriteAllBytes(ruta, texturas[i].EncodeToPNG());
+            Regenerar();
+            for (int i = 0; i < Todas.Length; i++)
+            {
+                string ruta = Path.Combine(Application.persistentDataPath,
+                    $"grafica_{Todas[i]}_{granularidad}.png");
+                File.WriteAllBytes(ruta, texturas[i].EncodeToPNG());
+            }
+            Debug.Log($"Gráficas guardadas en: {Application.persistentDataPath}");
+            Notificador.Mostrar($"Gráficas PNG guardadas en: {Application.persistentDataPath}", TipoMensaje.Exito);
         }
-        Debug.Log($"Gr�ficas guardadas en: {Application.persistentDataPath}");
+        catch (System.Exception e)
+        {
+            Debug.LogException(e);
+            Notificador.Mostrar("No se pudieron guardar las gráficas: " + e.Message, TipoMensaje.Error);
+        }
     }
 
     void Update()
     {
         var k = Keyboard.current;
-        if (k == null || simulador == null) return;
+        if (k == null || simulador == null || !GuardiaEntrada.AtajosPermitidos) return;
         if (k.gKey.wasPressedThisFrame) GuardarPng();
         if (k.tKey.wasPressedThisFrame) CambiarGranularidad();
     }
 
-    // Vista de prueba para ver las 4 gr�ficas en la ventana Game
+    // Vista de prueba para ver las 4 gráficas en la ventana Game
     void OnGUI()
     {
         if (!mostrarEnPantalla || texturas[0] == null) return;
+        if (GuardiaEntrada.SesionActiva != null && !GuardiaEntrada.SesionActiva()) return;   // sin sesión no se ve nada
 
         float cw = Mathf.Min(Screen.width / 2f - 15f, (Screen.height / 2f - 30f) * ancho / alto);
         float ch = cw * alto / ancho;

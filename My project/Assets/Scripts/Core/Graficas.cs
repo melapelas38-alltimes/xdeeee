@@ -1,15 +1,15 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
 namespace Composta.Core
 {
     public enum Magnitud { Temperatura, PH, Humedad, Oxigeno }
 
-    // El valor es cuántos ticks (horas) tiene cada bloque
+    // El valor es cuÃ¡ntos ticks (horas) tiene cada bloque
     public enum Granularidad { Hora = 1, Dia = 24, Semana = 168 }
 
     public class Punto
     {
-        public float X;      // en días simulados
+        public float X;      // en dÃ­as simulados
         public float Prom;
         public float Min;
         public float Max;
@@ -93,7 +93,7 @@ namespace Composta.Core
         {
             switch (m)
             {
-                case Magnitud.Temperatura: return "°C";
+                case Magnitud.Temperatura: return "Â°C";
                 case Magnitud.PH: return "";
                 default: return "%";
             }

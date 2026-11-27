@@ -1,9 +1,9 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 
 namespace Composta.Core
 {
-    // Ajusta una recta a las últimas horas y estima cuándo se cruzará un límite de aviso
+    // Ajusta una recta a las Ãºltimas horas y estima cuÃ¡ndo se cruzarÃ¡ un lÃ­mite de aviso
     public class Predictor
     {
         public int Ventana = 24;
@@ -78,9 +78,9 @@ namespace Composta.Core
                     string nombre = Reglas.Nombre(v.M);
                     lista.Add(new Alerta
                     {
-                        Variable = $"Predicción {nombre} ({(v.Sube ? "sube" : "baja")})",
+                        Variable = $"PredicciÃ³n {nombre} ({(v.Sube ? "sube" : "baja")})",
                         Nivel = Nivel.Aviso,
-                        Mensaje = $"{nombre} llegaría a {limite:F0}{lim.Unidad} en ~{eta:F0} h",
+                        Mensaje = $"{nombre} llegarÃ­a a {limite:F0}{lim.Unidad} en ~{eta:F0} h",
                         Accion = v.Sube ? lim.AccionAlta : lim.AccionBaja
                     });
                 }

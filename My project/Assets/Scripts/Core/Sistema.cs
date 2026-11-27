@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Composta.Core.Campo;
 
 namespace Composta.Core
 {
@@ -22,16 +23,21 @@ namespace Composta.Core
         public readonly Historial Historial;
         public readonly Metricas Metricas;
 
-        public SistemaComposta(PerfilComposta perfil, int semilla = 1234)
+        // Solo en lotes Manual: no hay sensores físicos; los valores son estimaciones calibradas con informes
+        public readonly CalibracionCampo Calibracion;
+        public bool SinSensores => Calibracion != null;
+
+        public SistemaComposta(PerfilComposta perfil, int semilla = 1234, bool modoCampo = false)
         {
             Perfil = perfil;
-            Modelo = new ModeloComposta(perfil, semilla);
+            Modelo = new ModeloComposta(perfil, semilla, modoCampo);
             Sensores = new PanelSensores(semilla + 1);
             Predictor = new Predictor(perfil);
             Controlador = new Controlador(perfil);
             Monitor = new MonitorAlertas();
             Historial = new Historial();
             Metricas = new Metricas(perfil);
+            if (modoCampo) Calibracion = new CalibracionCampo(Modelo, Historial);
         }
 
         public SistemaComposta(int semilla = 1234)
@@ -41,7 +47,7 @@ namespace Composta.Core
         {
             Modelo.AvanzarHora();
             var real = Modelo.Capturar();
-            var med = Sensores.Medir(real);
+            var med = SinSensores ? Estimar(real) : Sensores.Medir(real);
             var medida = Armar(real, med);
             Predictor.Observar(med);
 
@@ -57,14 +63,16 @@ namespace Composta.Core
             for (int i = 0; i < 4; i++) conf[i] = med[i].Confiable;
 
             var alertas = Reglas.Evaluar(medida, Perfil, conf);
-            alertas.AddRange(AlertasSensores(med));
+            if (!SinSensores) alertas.AddRange(AlertasSensores(med));
             alertas.AddRange(Predictor.Evaluar());
+            if (SinSensores)
+                foreach (var a in alertas) a.Mensaje += " (estimado)";
             if (Perfil.PesoExagerado)
                 alertas.Add(new Alerta
                 {
                     Variable = "Perfil",
                     Nivel = Nivel.Aviso,
-                    Mensaje = $"Peso {Perfil.PesoKg:F0} kg fuera del rango de {Perfil.Nombre} ({Perfil.PesoMin:F0}-{Perfil.PesoMax:F0} kg)",
+                    Mensaje = $"Peso {Perfil.PesoKg:F0} kg absurdo para {Perfil.Nombre} (límites {Perfil.ExtremoMin:F0}-{Perfil.ExtremoMax:F0} kg)",
                     Accion = "Cambiar de perfil o ajustar el peso"
                 });
             res.Eventos = Monitor.Actualizar(alertas);
@@ -82,7 +90,7 @@ namespace Composta.Core
             Predictor.Reiniciar();
         }
 
-        // litros < 0 = riego est�ndar del perfil
+        // litros < 0 = riego estándar del perfil
         public void Regar(float litros = -1f)
         {
             Modelo.Regar(litros);
@@ -91,8 +99,25 @@ namespace Composta.Core
             Predictor.Reiniciar();
         }
 
+        // Sin sensores, "lo medido" es la estimación del modelo (calibrada con los informes semanales)
+        static Medicion[] Estimar(Lectura real)
+        {
+            var med = new Medicion[4];
+            for (int i = 0; i < 4; i++)
+                med[i] = new Medicion
+                {
+                    Magnitud = (Magnitud)i,
+                    Valor = Agregador.Valor(real, (Magnitud)i),
+                    Confiable = true,
+                    Nivel = Nivel.Ok,
+                    Diagnostico = "Sin sensor · estimado por el modelo"
+                };
+            return med;
+        }
+
         static Lectura Armar(Lectura real, Medicion[] med) => new Lectura
         {
+            MasaKg = real.MasaKg,
             Tick = real.Tick,
             Dias = real.Dias,
             Etapa = real.Etapa,

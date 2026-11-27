@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+Ôªøusing System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
@@ -12,7 +12,7 @@ namespace Composta.Core
         public string Motivo;
     }
 
-    // Control autom·tico con histÈresis; los umbrales salen de los rangos del perfil
+    // Control autom√°tico con hist√©resis; los umbrales salen de los rangos del perfil
     public class Controlador
     {
         public bool Activo;
@@ -44,7 +44,7 @@ namespace Composta.Core
                 if (m[(int)Magnitud.Oxigeno].Confiable && med.Oxigeno < O2Voltear)
                     ordenes.Add(new Orden { Accion = Accion.Voltear, Motivo = $"O2 medido {med.Oxigeno:F1}%" });
                 else if (m[(int)Magnitud.Temperatura].Confiable && med.Temperatura > TempVoltear)
-                    ordenes.Add(new Orden { Accion = Accion.Voltear, Motivo = $"Temperatura medida {med.Temperatura:F1}∞C" });
+                    ordenes.Add(new Orden { Accion = Accion.Voltear, Motivo = $"Temperatura medida {med.Temperatura:F1}¬∞C" });
             }
 
             if (tick - ultimoRegar >= EsperaRegar && m[(int)Magnitud.Humedad].Confiable && med.Humedad < HumRegar)
@@ -54,7 +54,7 @@ namespace Composta.Core
         }
     }
 
-    // Se eval˙a contra la VERDAD del modelo y contra los rangos del perfil
+    // Se eval√∫a contra la VERDAD del modelo y contra los rangos del perfil
     public class Metricas
     {
         public int Horas;
@@ -86,7 +86,7 @@ namespace Composta.Core
         public static string Tabla(string[] nombres, Metricas[] d)
         {
             var sb = new StringBuilder();
-            sb.AppendLine("Escenario | % en rango: Temp | pH | Hum | O2 | Horas crÌticas | Volteos | Riegos");
+            sb.AppendLine("Escenario | % en rango: Temp | pH | Hum | O2 | Horas cr√≠ticas | Volteos | Riegos");
             for (int i = 0; i < d.Length; i++)
                 sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
                     "{0} | {1:F0} | {2:F0} | {3:F0} | {4:F0} | {5} | {6} | {7}",
@@ -100,7 +100,7 @@ namespace Composta.Core
         public static string TablaPerfiles(string[] nombres, float[] pesos, Metricas[] d)
         {
             var sb = new StringBuilder();
-            sb.AppendLine("Perfil | Peso (kg) | Temp. pico (∞C) | Etapa final | % O2 | % Hum | Volteos | Riegos");
+            sb.AppendLine("Perfil | Peso (kg) | Temp. pico (¬∞C) | Etapa final | % O2 | % Hum | Volteos | Riegos");
             for (int i = 0; i < d.Length; i++)
                 sb.AppendLine(string.Format(CultureInfo.InvariantCulture,
                     "{0} | {1:F0} | {2:F1} | {3} | {4:F0} | {5:F0} | {6} | {7}",

@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -13,7 +14,7 @@ namespace Composta.Core
 
         public IEnumerable<Alerta> Activas => activas.Values;
 
-        // Recibe TODAS las alertas del tick: de reglas, de sensores y de predicci�n
+        // Recibe TODAS las alertas del tick: de reglas, de sensores y de predicción
         public List<EventoAlerta> Actualizar(IEnumerable<Alerta> actuales)
         {
             var eventos = new List<EventoAlerta>();
@@ -61,16 +62,35 @@ namespace Composta.Core
             if (Lecturas.Count > Capacidad) { Lecturas.RemoveAt(0); Reales.RemoveAt(0); }
         }
 
+        // Reparte una corrección de forma lineal entre dos horas (0 en tickDesde, completa en tickHasta)
+        public void AjustarTramo(int tickDesde, int tickHasta, float dTemp, float dHum, float dMasa)
+        {
+            if (tickHasta <= tickDesde) return;
+            float largo = tickHasta - tickDesde;
+            for (int i = 0; i < Lecturas.Count; i++)
+            {
+                int t = Lecturas[i].Tick;
+                if (t <= tickDesde || t > tickHasta) continue;
+                float f = (t - tickDesde) / largo;
+                foreach (var l in new[] { Lecturas[i], Reales[i] })
+                {
+                    l.Temperatura += dTemp * f;
+                    l.Humedad = Math.Max(0f, Math.Min(100f, l.Humedad + dHum * f));
+                    l.MasaKg += dMasa * f;
+                }
+            }
+        }
+
         public string ToCsv()
         {
             var c = CultureInfo.InvariantCulture;
-            var sb = new StringBuilder("tick,dias,etapa,temperatura,ph,humedad,oxigeno,real_temperatura,real_ph,real_humedad,real_oxigeno\n");
+            var sb = new StringBuilder("tick,dias,etapa,temperatura,ph,humedad,oxigeno,real_temperatura,real_ph,real_humedad,real_oxigeno,masa_kg\n");
             for (int i = 0; i < Lecturas.Count; i++)
             {
                 var l = Lecturas[i]; var r = Reales[i];
-                sb.AppendLine(string.Format(c, "{0},{1:F2},{2},{3:F2},{4:F2},{5:F2},{6:F2},{7:F2},{8:F2},{9:F2},{10:F2}",
+                sb.AppendLine(string.Format(c, "{0},{1:F2},{2},{3:F2},{4:F2},{5:F2},{6:F2},{7:F2},{8:F2},{9:F2},{10:F2},{11:F2}",
                     l.Tick, l.Dias, l.Etapa, l.Temperatura, l.PH, l.Humedad, l.Oxigeno,
-                    r.Temperatura, r.PH, r.Humedad, r.Oxigeno));
+                    r.Temperatura, r.PH, r.Humedad, r.Oxigeno, r.MasaKg));
             }
             return sb.ToString();
         }

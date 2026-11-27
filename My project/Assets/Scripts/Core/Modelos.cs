@@ -1,4 +1,4 @@
-namespace Composta.Core
+Ôªønamespace Composta.Core
 {
     public enum Etapa { Mesofilica, Termofilica, Enfriamiento, Maduracion }
     public enum Nivel { Ok, Aviso, Critico }
@@ -6,12 +6,13 @@ namespace Composta.Core
 
     public class Lectura
     {
-        public int Tick;          // hora simulada (eje X de las gr·ficas)
+        public int Tick;          // hora simulada (eje X de las gr√°ficas)
         public float Dias;
         public float Temperatura;
         public float PH;
         public float Humedad;
         public float Oxigeno;
+        public float MasaKg;      // peso estimado (en el modelo de campo baja al descomponerse)
         public Etapa Etapa;
     }
 
@@ -20,7 +21,7 @@ namespace Composta.Core
         public string Variable;
         public Nivel Nivel;
         public string Mensaje;
-        public string Accion;     // quÈ hacer para corregirla
+        public string Accion;     // qu√© hacer para corregirla
     }
 
     public class EventoAlerta
